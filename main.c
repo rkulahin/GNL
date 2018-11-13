@@ -12,7 +12,8 @@ int	main(void)
 
 	get_next_line(fd, &line);
 	printf("%s\n", line);
+	// system("Leaks a.out");
 	// while (get_next_line(fd, &line) > 0)
-	// 	printf("%s\n", line);
+	// 	printf("%s", line);
 	return (0);
 }

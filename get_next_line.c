@@ -6,7 +6,7 @@
 /*   By: rkulahin <rkulahin@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2018/11/06 14:44:23 by rkulahin          #+#    #+#             */
-/*   Updated: 2018/11/11 18:59:26 by rkulahin         ###   ########.fr       */
+/*   Updated: 2018/11/12 09:52:28 by rkulahin         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -46,13 +46,12 @@ char	*if_n_str(t_list *list, const int fd)
 	int		size;
 
 	size = read(fd, buf, BUFF_SIZE);
-	buf[size] = '\0';
 	tmp = ft_strjoin(list->content, buf);
-	//free(list->content);
+	free(list->content);
 	if (size == 0)
 		return (NULL);
 	list->content = tmp;
-	return (tmp);
+	return (if_find(list, fd));
 }
 
 char	*if_find(t_list *list, const int fd)
@@ -69,11 +68,12 @@ char	*if_find(t_list *list, const int fd)
 	}
 	if (ft_strchr(list->content, '\n'))
 	{
-		str = list->content;
+		str = ft_strcpy(str, list->content);
 		len = ft_lenword(str, '\n');
-		lc = ft_lenword(list->content, '\n');
+		lc = ft_lenword(list->content, '\0');
 		lc = lc - len;
 		list->content = ft_memmove(list->content,(ft_strchr(list->content, '\n') + 1), lc);
+		ret = malloc(len);
 		return (ft_strncpy(ret, str, len));
 	}
 	return (if_n_str(list, fd));
@@ -84,6 +84,7 @@ int		get_next_line(const int fd, char **line)
 	static	t_list	*node;
 	t_list			*tmp;
 
+	*line = NULL;
 	if (!node)
 	{
 		node = (t_list *)malloc(sizeof(t_list));
@@ -91,13 +92,12 @@ int		get_next_line(const int fd, char **line)
 		node->content = NULL;
 	}
 	tmp = find_list(node, fd);
-	*line = if_find(tmp, fd);
-	if (*line == NULL)
-		return (0);
-	while ((ft_strchr(*line, '\n')) == NULL)
+	while (*line == NULL || (ft_strchr(*line, '\n')) == NULL)
 	{
-		free(*line);
 		*line = if_find(tmp, fd);
 	}
+	if (*line == NULL)
+		return (0);
+
 	return (1);
 }
