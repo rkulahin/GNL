@@ -6,98 +6,121 @@
 /*   By: rkulahin <rkulahin@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2018/11/06 14:44:23 by rkulahin          #+#    #+#             */
-/*   Updated: 2018/11/12 09:52:28 by rkulahin         ###   ########.fr       */
+/*   Updated: 2018/11/22 09:19:47 by rkulahin         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
-#include <stdio.h>
 #include "get_next_line.h"
+#include "libft/libft.h"
 
-t_list	*find_list(t_list *start, const int fd)
+void	custom(char buf[BUFF_SIZE + 1], int size, t_list *tmp)
+{
+	int		fd;
+	char	*ptr;
+	char	*str;
+
+	str = "\0";
+	size = 0;
+	fd = tmp->content_size;
+	while ((size = read(fd, buf, BUFF_SIZE)))
+	{
+		buf[size] = '\0';
+		ptr = ft_strjoin(tmp->content, buf);
+		free(tmp->content);
+		tmp->content = ft_strjoin(ptr, str);
+		free(ptr);
+		if (ft_strchr(buf, '\n'))
+			break ;
+	}
+}
+
+char	*ft_jchar(char *line, char c)
+{
+	char	*str;
+	size_t	i;
+	size_t	len;
+
+	i = 0;
+	if (!line || !c)
+		return (NULL);
+	len = ft_strlen(line);
+	str = ft_strnew(len + 1);
+	if (!str)
+		return (NULL);
+	while (i < len)
+	{
+		str[i] = line[i];
+		i++;
+	}
+	str[i] = c;
+	return (str);
+}
+
+int		ft_copy(char **line, t_list *list, char c)
+{
+	int		i;
+	char	*str;
+	int		j;
+
+	i = 0;
+	j = 0;
+	str = list->content;
+	while (str[i])
+	{
+		if (str[i] == c)
+			break ;
+		i++;
+	}
+	*line = ft_strnew(i);
+	*line = ft_strncpy(*line, str, i);
+	return (i);
+}
+
+t_list	*find_list(t_list **start, int fd)
 {
 	t_list *tmp;
 
-	tmp = start;
-	if (start)
+	tmp = *start;
+	while (tmp)
 	{
-		if (tmp->content_size == fd)
-		{
+		if ((int)tmp->content_size == fd)
 			return (tmp);
-		}
-		while (tmp->next)
-		{
-			if (tmp->content_size == fd)
-			{
-				return (tmp);
-			}
-			tmp = tmp->next;
-		}
+		tmp = tmp->next;
 	}
-	tmp->next = malloc(sizeof(t_list));
-	tmp = tmp->next;
+	tmp = malloc(sizeof(t_list));
+	tmp->next = NULL;
+	tmp->content = ft_strnew(1);
 	tmp->content_size = fd;
+	ft_lstadd(start, tmp);
+	tmp = *start;
 	return (tmp);
-}
-
-char	*if_n_str(t_list *list, const int fd)
-{
-	char	buf[BUFF_SIZE];
-	char	*tmp;
-	int		size;
-
-	size = read(fd, buf, BUFF_SIZE);
-	tmp = ft_strjoin(list->content, buf);
-	free(list->content);
-	if (size == 0)
-		return (NULL);
-	list->content = tmp;
-	return (if_find(list, fd));
-}
-
-char	*if_find(t_list *list, const int fd)
-{
-	char	*str;
-	char	*ret;
-	int		lc;
-	int		len;
-
-	len = 0;
-	if (!(list->content))
-	{
-		list->content = ft_strnew(BUFF_SIZE);
-	}
-	if (ft_strchr(list->content, '\n'))
-	{
-		str = ft_strcpy(str, list->content);
-		len = ft_lenword(str, '\n');
-		lc = ft_lenword(list->content, '\0');
-		lc = lc - len;
-		list->content = ft_memmove(list->content,(ft_strchr(list->content, '\n') + 1), lc);
-		ret = malloc(len);
-		return (ft_strncpy(ret, str, len));
-	}
-	return (if_n_str(list, fd));
 }
 
 int		get_next_line(const int fd, char **line)
 {
 	static	t_list	*node;
 	t_list			*tmp;
+	char			buf[BUFF_SIZE + 1];
+	int				size;
+	char			*s;
 
+	size = 0;
+	if ((fd < 0 || line == NULL || read(fd, buf, 0) < 0))
+		return (-1);
+	tmp = find_list(&node, fd);
 	*line = NULL;
-	if (!node)
-	{
-		node = (t_list *)malloc(sizeof(t_list));
-		node->content_size = fd;
-		node->content = NULL;
-	}
-	tmp = find_list(node, fd);
-	while (*line == NULL || (ft_strchr(*line, '\n')) == NULL)
-	{
-		*line = if_find(tmp, fd);
-	}
-	if (*line == NULL)
+	custom(buf, size, tmp);
+	if (size < BUFF_SIZE && !ft_strlen(tmp->content))
 		return (0);
-
+	size = ft_copy(line, tmp, '\n');
+	if (size < (int)ft_strlen(tmp->content))
+	{
+		s = ft_strdup(tmp->content);
+		free(tmp->content);
+		tmp->content = ft_strsub(s, size + 1, ft_strlen(s) - size);
+		free(s);
+	}
+	else
+		ft_strclr(tmp->content);
 	return (1);
 }

@@ -6,7 +6,7 @@
 /*   By: rkulahin <rkulahin@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2018/11/06 14:44:34 by rkulahin          #+#    #+#             */
-/*   Updated: 2018/11/12 09:15:57 by rkulahin         ###   ########.fr       */
+/*   Updated: 2018/11/22 09:21:11 by rkulahin         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -17,9 +17,8 @@
 # include <stdlib.h>
 # include "libft/libft.h"
 
-# define BUFF_SIZE 100
+# define BUFF_SIZE 5
 
 int		get_next_line(const int fd, char **line);
-char	*if_find(t_list *list, const int fd);
-t_list	*find_list(t_list *start, const int fd);
+
 #endif
